@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <iterator>
 #include <algorithm>
+#include <string>
 
 void transpose(const int *src, int *dst, const int N, const int M) {
 #pragma omp parallel for
@@ -13,25 +14,6 @@ void transpose(const int *src, int *dst, const int N, const int M) {
         dst[n] = src[M*j + i];
     }
 }
-
-//template<class RandomIterator>
-//void transpose(RandomIterator first, RandomIterator last, int m)
-//{
-//    const int mn1 = (last - first - 1);
-//    const int n   = (last - first) / m;
-//    std::vector<bool> visited(last - first);
-//    RandomIterator cycle = first;
-//    while (++cycle != last) {
-//        if (visited[cycle - first])
-//            continue;
-//        int a = cycle - first;
-//        do  {
-//            a = a == mn1 ? mn1 : (n * a) % mn1;
-//            std::swap(*(first + a), *cycle);
-//            visited[a] = true;
-//        } while ((first + a) != cycle);
-//    }
-//}
 
 void printMatrix(int *matrix, int n, int m) {
     for (int i = 0; i < n; i++) {
