@@ -30,6 +30,7 @@ int main(int argc, char* argv[]) {
     MPI_Init(&argc, &argv);
 
     int procId, procCount;
+    double startTime = .0;
 
     MPI_Comm_rank(MPI_COMM_WORLD, &procId);
     MPI_Comm_size(MPI_COMM_WORLD, &procCount);
@@ -53,23 +54,27 @@ int main(int argc, char* argv[]) {
             showMatrix = true;
         }
 
-        std::default_random_engine generator;
-        std::uniform_int_distribution<int> distribution(-1000,1000);
+        std::default_random_engine generator(static_cast<unsigned int>(time(0)));
+        std::normal_distribution<double> distribution(1000,700);
 
         for (int i = 0; i < n * m; i++) {
-            array[i] = distribution(generator);
+            array[i] = static_cast<int>(distribution(generator));
         }
+
+        startTime = MPI_Wtime();
 
         if (showMatrix) {
             std::cout << "Original matrix" << std::endl;
             printMatrix(array, n, m);
         }
 
-        //transpose(array, array + n*m, m);
         int *nArr = new int[n * m];
         transpose(array, nArr, n, m);
-        std::cout << "Transposed matrix" << std::endl;
-        printMatrix(nArr, m, n);
+        if (showMatrix) {
+            std::cout << "Transposed matrix" << std::endl;
+            printMatrix(nArr, m, n);
+        }
+        delete array;
         array = nArr;
 
     }
@@ -117,6 +122,8 @@ int main(int argc, char* argv[]) {
             std::cout << std::setw(5) << totalMin[i] << " ";
         }
         std::cout << std::endl;
+
+        std::cout << std::endl << "Complete in " << MPI_Wtime() - startTime << "s" << std::endl;
     }
 
     MPI_Finalize();
