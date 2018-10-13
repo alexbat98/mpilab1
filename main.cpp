@@ -5,27 +5,9 @@
 #include <iterator>
 #include <algorithm>
 #include <string>
+#include "Matrix.h"
 
-void transpose(const int *src, int *dst, const int N, const int M) {
-#pragma omp parallel for
-    for(int n = 0; n<N*M; n++) {
-        int i = n/N;
-        int j = n%N;
-        dst[n] = src[M*j + i];
-    }
-}
-
-void printMatrix(int *matrix, int n, int m) {
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < m; j++) {
-            std::cout << std::setw(5) << matrix[i*m + j] << " ";
-        }
-        std::cout << std::endl;
-    }
-}
-
-
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
 
     MPI_Init(&argc, &argv);
 
@@ -39,14 +21,14 @@ int main(int argc, char* argv[]) {
         std::cout << "Wrong number of arguments!" << std::endl;
     }
 
-    int n = std::stoi(std::string(argv[1]));
-    int m = std::stoi(std::string(argv[2]));
+    const int n = std::stoi(std::string(argv[1]));
+    const int m = std::stoi(std::string(argv[2]));
 
-    int *array = nullptr;
+    Matrix<int> *matrix = nullptr;
 
     if (procId == 0) { // main process
 
-        array  = new int[n * m];
+        matrix = new Matrix<int>(n, m);
 
         bool showMatrix = false;
 
@@ -54,36 +36,31 @@ int main(int argc, char* argv[]) {
             showMatrix = true;
         }
 
-        std::default_random_engine generator(static_cast<unsigned int>(time(0)));
-        std::normal_distribution<double> distribution(1000,700);
-
-        for (int i = 0; i < n * m; i++) {
-            array[i] = static_cast<int>(distribution(generator));
-        }
+        matrix->fillWithRand();
 
         startTime = MPI_Wtime();
 
         if (showMatrix) {
             std::cout << "Original matrix" << std::endl;
-            printMatrix(array, n, m);
+            matrix->print();
         }
 
-        int *nArr = new int[n * m];
-        transpose(array, nArr, n, m);
+        matrix->transpose();
+
         if (showMatrix) {
             std::cout << "Transposed matrix" << std::endl;
-            printMatrix(nArr, m, n);
+            matrix->print();
         }
-        delete array;
-        array = nArr;
 
     }
 
     int partSize = m / procCount;
 
-    int *matrixPart = new int[n*partSize];
+    int *matrixPart = new int[n * partSize];
 
-    MPI_Scatter(array, n * partSize, MPI_INT, matrixPart, n * partSize, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Scatter(matrix->raw(),
+                n * partSize, MPI_INT, matrixPart, n * partSize, MPI_INT, 0,
+                MPI_COMM_WORLD);
 
     int *resMin = new int[partSize];
 
@@ -106,12 +83,12 @@ int main(int argc, char* argv[]) {
     MPI_Gather(resMin, partSize, MPI_INT, totalMin, partSize, MPI_INT, 0, MPI_COMM_WORLD);
 
     if (procId == 0) {
-        int tail = m - procCount * partSize; // todo check +1
+        int tail = m - procCount * partSize;
         for (int i = tail + 1; i < m; i++) {
             int min = INT_MAX;
             for (int j = 0; j < n; j++) {
-                if (array[i * n + j] < min) {
-                    min = array[i * n + j];
+                if (matrix->raw()[i * n + j] < min) {
+                    min = matrix->raw()[i * n + j];
                 }
             }
             totalMin[i] = min;
