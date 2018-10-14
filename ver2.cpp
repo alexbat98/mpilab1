@@ -73,15 +73,15 @@ int main(int argc, char *argv[]) {
                 for (int i = 0; i < m; i++) {
                     row[i] = matrix->raw()[(n - tail - 1) * m + i];
                 }
-            } else if (procCount <= tail) {
-                MPI_Status *status; // todo check for error
-                MPI_Recv(row, m, MPI_INT, 0, 0, MPI_COMM_WORLD, status);
-            } else if (procCount > tail) {
+            } else if (procId <= tail) {
+                MPI_Recv(row, m, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            } else if (procId > tail) {
                 for (int i = 0; i < m; i++) {
                     row[i] = INT_MAX;
                 }
             }
 
+            MPI_Barrier(MPI_COMM_WORLD);
             min = procId == 0 ? matrix->raw() + (n - 1) * m : nullptr;
             MPI_Reduce(row, min, m, MPI_INT, MPI_MIN, 0, MPI_COMM_WORLD);
         }
@@ -90,7 +90,8 @@ int main(int argc, char *argv[]) {
             for (int i = 0; i < m; i++) {
                 std::cout << min[i] << " ";
             }
-            std::cout << std::endl;
+            std::cout << std::endl << "Complete in " << MPI_Wtime() - startTime << "s" << std::endl;
+
         }
 
     } else {
