@@ -18,3 +18,5 @@ if (OPENMP_FOUND)
     target_link_libraries(mpilab1_v1 PUBLIC ${OpenMP_CXX_LIBRARIES})
     target_link_libraries(mpilab1_v2 PUBLIC ${OpenMP_CXX_LIBRARIES})
 endif()
+
+add_executable(singlethread singlethread.cpp)

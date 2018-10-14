@@ -87,9 +87,7 @@ int main(int argc, char *argv[]) {
         for (int i = tail + 1; i < m; i++) {
             int min = INT_MAX;
             for (int j = 0; j < n; j++) {
-                if (matrix->raw()[i * n + j] < min) {
-                    min = matrix->raw()[i * n + j];
-                }
+                min = std::min(matrix->raw()[i * n + j], min);
             }
             totalMin[i] = min;
         }
