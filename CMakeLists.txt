@@ -11,8 +11,10 @@ include_directories(SYSTEM ${MPI_INCLUDE_PATH})
 target_link_libraries(mpilab1_v1 PUBLIC ${MPI_CXX_LIBRARIES})
 
 add_executable(mpilab1_v2 ver2.cpp Matrix.cpp)
-include_directories(SYSTEM ${MPI_INCLUDE_PATH})
 target_link_libraries(mpilab1_v2 PUBLIC ${MPI_CXX_LIBRARIES})
+
+add_executable(mpilab1_v3 ver3.cpp)
+target_link_libraries(mpilab1_v3 PUBLIC ${MPI_CXX_LIBRARIES})
 
 if (OPENMP_FOUND)
     target_link_libraries(mpilab1_v1 PUBLIC ${OpenMP_CXX_LIBRARIES})

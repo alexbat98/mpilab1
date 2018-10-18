@@ -41,9 +41,9 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    for (int i = 0; i < m; i++) {
-        std::cout << min[i] << " ";
-    }
+//    for (int i = 0; i < m; i++) {
+//        std::cout << min[i] << " ";
+//    }
 
     auto end = std::chrono::system_clock::now();
 

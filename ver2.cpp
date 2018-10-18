@@ -70,8 +70,14 @@ int main(int argc, char *argv[]) {
                 for (int i = n - tail, j = 1; i < n && j <= tail; i++, j++) {
                     MPI_Send(matrix->raw() + i * m, m, MPI_INT, j, 0, MPI_COMM_WORLD);
                 }
-                for (int i = 0; i < m; i++) {
-                    row[i] = matrix->raw()[(n - tail - 1) * m + i];
+                if (tail < n) {
+                    for (int i = 0; i < m; i++) {
+                        row[i] = matrix->raw()[(n - tail - 1) * m + i];
+                    }
+                } else {
+                    for (int i = 0; i < m; i++) {
+                        row[i] = INT_MAX;
+                    }
                 }
             } else if (procId <= tail) {
                 MPI_Recv(row, m, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -82,14 +88,18 @@ int main(int argc, char *argv[]) {
             }
 
             MPI_Barrier(MPI_COMM_WORLD);
-            min = procId == 0 ? matrix->raw() + (n - 1) * m : nullptr;
+//            if (tail == n && procId == 0) {
+//                min = new int[m];
+//            } else {
+                min = procId == 0 ? matrix->raw() + (n - 1) * m : nullptr;
+//            }
             MPI_Reduce(row, min, m, MPI_INT, MPI_MIN, 0, MPI_COMM_WORLD);
         }
 
         if (procId == 0) {
-            for (int i = 0; i < m; i++) {
-                std::cout << min[i] << " ";
-            }
+//            for (int i = 0; i < m; i++) {
+//                std::cout << min[i] << " ";
+//            }
             std::cout << std::endl << "Complete in " << MPI_Wtime() - startTime << "s" << std::endl;
 
         }
